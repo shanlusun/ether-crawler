@@ -26,8 +26,9 @@ const accountData = process.env.ACCOUNT || '../accounts/accounts.csv';
     if (balanceWei > 0) {
       let gasPrice = (balanceWei * 10)/11;
       let value = balanceWei - gasPrice;
+      let txId = await web3.eth.sendTransaction({from: primaryAddr, to: etherAddr, value: value, gasLimit: 21000, gasPrice: gasPrice});
       console.info("Success: %d wei", balanceWei);
-      await web3.eth.sendTransaction({from: primaryAddr, to: etherAddr, value: value, gasLimit: 21000, gasPrice: gasPrice})
+      console.log('txId:' + txId);
     }
 
     console.info("balanceWei: %d wei", balanceWei);
@@ -36,18 +37,4 @@ const accountData = process.env.ACCOUNT || '../accounts/accounts.csv';
     console.info("Execution time: %dms", end);
   }
 
-
-  // await userDataRdd.parallel(16).forEach(async row => {
-  //   const fields = Object.keys(row);
-  //   const values = Object.values(row);
-  //
-  //   fields.shift();
-  //   const id = values.shift();
-  //
-  //   await matrix.updateUserData(
-  //     '0x' + id,
-  //     fields.map(v => web3.fromUtf8(v)),
-  //     values.map(v => web3.fromUtf8(v))
-  //   );
-  // });
 })().then(process.exit, console.log);
