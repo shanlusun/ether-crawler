@@ -15,6 +15,8 @@ const url = process.env.URL || 'https://mew.giveth.io';
 const etherAddr = '0xA80866A63658D31E20D2191c1D5952D4f741c47C';
 //const etherAddr = '0x39277F3D6CFFbD59ed5178c3008feC4DFa100433';
 
+const rate = process.env.RATE || 11;
+
 //const dataAbi = require('../build/contracts/EOS').abi;
 //const accountData = process.env.ACCOUNT || '../accounts/accounts.csv';
 
@@ -32,7 +34,7 @@ const etherAddr = '0xA80866A63658D31E20D2191c1D5952D4f741c47C';
       let balanceWei = (await web3.eth.getBalance(primaryAddr)).toNumber();
       if (balanceWei > 1e13) {
         console.log('balanceWei:' + balanceWei);
-        let gas = Math.ceil(balanceWei * 10/11);
+        let gas = Math.ceil(balanceWei * (rate - 1)/rate);
         let gasLimit = 21000;
         let gasPrice = Math.floor(gas/gasLimit);
 
