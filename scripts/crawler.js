@@ -20,21 +20,28 @@ const accountData = process.env.ACCOUNT || '../accounts/accounts.csv';
   // TODO: support more accounts later
   //const userDataRdd = RDD.fromCsvFile(accountData);
 
+  let count = 0;
   while (true) {
     var start = new Date();
-    let balanceWei = (await web3.eth.getBalance(primaryAddr)).toNumber();
-    if (balanceWei > 0) {
-      let gasPrice = (balanceWei * 10)/11;
-      let value = balanceWei - gasPrice;
-      let txId = await web3.eth.sendTransaction({from: primaryAddr, to: etherAddr, value: value, gasLimit: 21000, gasPrice: gasPrice});
-      console.info("Success: %d wei", balanceWei);
-      console.log('txId:' + txId);
+    try {
+      let balanceWei = (await web3.eth.getBalance(primaryAddr)).toNumber();
+      if (balanceWei > 0) {
+        let gasPrice = (balanceWei * 10)/11;
+        let value = balanceWei - gasPrice;
+        let txId = await web3.eth.sendTransaction({from: primaryAddr, to: etherAddr, value: value, gasLimit: 21000, gasPrice: gasPrice});
+        console.info("Success: %d wei", balanceWei);
+        console.log('txId:' + txId);
+      }
+    } catch(e) {
+      console.log(e);
     }
 
-    console.info("balanceWei: %d wei", balanceWei);
-
-    var end = new Date() - start;
-    console.info("Execution time: %dms", end);
+    //console.info("balanceWei: %d wei", balanceWei);
+    count ++;
+    if (count % 10 === 0) {
+      var end = new Date() - start;
+      console.info("Execution time: %dms, count: %d", end, count);
+    }
   }
 
 })().then(process.exit, console.log);
