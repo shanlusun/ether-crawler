@@ -8,6 +8,9 @@ const url = process.env.URL || 'https://mew.giveth.io';
 //const url = process.env.URL || 'https://mainnet.infura.io/CwrqJlxnjg8oxqS69pVi';
 //const url = process.env.URL || 'https://api.myetherapi.com/eth';
 
+//const urlArray = ['https://mew.giveth.io', 'https://mainnet.infura.io/CwrqJlxnjg8oxqS69pVi', 'https://api.myetherapi.com/eth', 'https://mainnet.infura.io/metamask'];
+const urlArray = ['https://mew.giveth.io', 'https://mainnet.infura.io/CwrqJlxnjg8oxqS69pVi', 'https://mainnet.infura.io/metamask'];
+
 //ropsten testnet
 //const url = process.env.URL || 'https://ropsten.infura.io/CwrqJlxnjg8oxqS69pVi';
 
@@ -20,46 +23,65 @@ const rate = process.env.RATE || 11;
 //const dataAbi = require('../build/contracts/EOS').abi;
 //const accountData = process.env.ACCOUNT || '../accounts/accounts.csv';
 
+
+
+async function check () {
+
+}
+
 (async function () {
   const wallet = Web3Wallet.wallet.fromPrivateKey(privateKey);
-  const web3 = Web3Wallet.create(wallet, url);
+  //const web3 = Web3Wallet.create(wallet, url);
+
   //const eos = web3.eth.loadContract(dataAbi, contractAddr);
   // TODO: support more accounts later
   //const userDataRdd = RDD.fromCsvFile(accountData);
 
   let count = 0;
+  const web3Array = [];
+
+  for (var i = 0; i < urlArray.length; i++) {
+    const web3 = Web3Wallet.create(wallet, urlArray[i]);
+    web3Array.push(web3);
+  }
+
+
   while (true) {
-    var start = new Date();
-    try {
-      let balanceWei = (await web3.eth.getBalance(primaryAddr)).toNumber();
-      if (balanceWei > 1e13) {
-        console.log('balanceWei:' + balanceWei);
-        let gas = Math.ceil(balanceWei * (rate - 1)/rate);
-        let gasLimit = 21000;
-        let gasPrice = Math.floor(gas/gasLimit);
 
-        let valueWei = balanceWei - gas;
+    for (var i = 0; i < web3Array.length; i++) {
+      var start = new Date();
 
-        web3.eth.sendTransaction({from: primaryAddr, to: etherAddr, value: valueWei, gasLimit: gasLimit, gasPrice: gasPrice},
-            function(err, transactionHash) {
-              if (err) {
-                console.log(err);
-              } else {
-                console.log('transactionHash:' + transactionHash);
-                console.info("Success! balanceWei: %d wei, valueWei: %d wei", balanceWei, valueWei);
-              }
-        });
+      try {
+        let balanceWei = (await web3Array[i].eth.getBalance(primaryAddr)).toNumber();
+        if (balanceWei > 1e13) {
+          console.log('balanceWei:' + balanceWei);
+          let gas = Math.ceil(balanceWei * (rate - 1)/rate);
+          let gasLimit = 21000;
+          let gasPrice = Math.floor(gas/gasLimit);
 
+          let valueWei = balanceWei - gas;
+
+          web3Array[i].eth.sendTransaction({from: primaryAddr, to: etherAddr, value: valueWei, gasLimit: gasLimit, gasPrice: gasPrice},
+              function(err, transactionHash) {
+                if (err) {
+                  console.log(err);
+                } else {
+                  console.log('transactionHash:' + transactionHash);
+                  console.log("Success! balanceWei: %d wei, valueWei: %d wei", balanceWei, valueWei);
+                }
+              });
+
+        }
+      } catch(e) {
+        console.log(e);
       }
-    } catch(e) {
-      console.log(e);
-    }
 
-    //console.info("balanceWei: %d wei", balanceWei);
-    count ++;
-    if (count % 10 === 0) {
-      var end = new Date() - start;
-      console.info("Execution time: %dms, count: %d", end, count);
+      //console.info("balanceWei: %d wei", balanceWei);
+      count ++;
+      if (count % 10 === 0) {
+        var end = new Date() - start;
+        console.log(urlArray[i], "Execution time: %dms, count: %d", end, count);
+      }
     }
   }
 
